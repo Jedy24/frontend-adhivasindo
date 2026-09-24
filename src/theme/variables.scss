@@ -1,0 +1,52 @@
+/* Ionic CSS variables — Adhivasindo Board theme (mirip referensi) */
+:root {
+  --ion-font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  --ion-background-color: #f4f6f9;
+  --ion-text-color: #1f2937;
+
+  --ion-color-primary: #2563eb;
+  --ion-color-primary-rgb: 37, 99, 235;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-shade: #1d4ed8;
+  --ion-color-primary-tint: #3b82f6;
+
+  --board-card-bg: #eaf1f8;
+  --board-header-bg: #ffffff;
+  --board-search-bg: #eef2f7;
+  --board-ink: #1f2937;
+  --board-muted: #64748b;
+  --board-line: #e2e8f0;
+  --board-radius: 10px;
+
+  --label-feature-bg: #dbeafe;
+  --label-feature-fg: #2563eb;
+  --label-bug-bg: #fee2e2;
+  --label-bug-fg: #dc2626;
+  --label-issue-bg: #fef3c7;
+  --label-issue-fg: #d97706;
+  --label-undefined-bg: #e5e7eb;
+  --label-undefined-fg: #6b7280;
+}
+
+/* Dark mode — mengikuti palet Ionic + penyesuaian board */
+.ion-palette-dark {
+  --ion-background-color: #0f1420;
+  --ion-text-color: #e2e8f0;
+
+  --board-card-bg: #1c2536;
+  --board-header-bg: #151c2b;
+  --board-search-bg: #232f47;
+  --board-ink: #e2e8f0;
+  --board-muted: #94a3b8;
+  --board-line: #273449;
+
+  --label-feature-bg: #1e3a8a;
+  --label-feature-fg: #bfdbfe;
+  --label-bug-bg: #7f1d1d;
+  --label-bug-fg: #fecaca;
+  --label-issue-bg: #78350f;
+  --label-issue-fg: #fde68a;
+  --label-undefined-bg: #334155;
+  --label-undefined-fg: #cbd5e1;
+}

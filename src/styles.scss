@@ -1,0 +1,93 @@
+/* Global styles — Adhivasindo Board */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
+  font-family: var(--ion-font-family);
+}
+
+/* ---- CDK Drag & Drop ---- */
+.cdk-drop-list-dragging .cdk-drag {
+  transition: transform 200ms ease;
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: var(--board-radius);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+  opacity: 0.95;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+  border: 1.5px dashed #93c5fd;
+  border-radius: var(--board-radius);
+  min-height: 90px;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* ---- Board horizontal scroll ---- */
+.board-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 12px 16px 24px;
+  scroll-snap-type: x proximity;
+  min-height: 0;
+}
+
+.board-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.board-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+
+/* ---- Modal lebar (detail task, desktop 2 kolom) ---- */
+.task-detail-modal::part(content) {
+  --width: min(920px, 94vw);
+  --height: min(720px, 92vh);
+  --border-radius: 14px;
+}
+
+@media (max-width: 767px) {
+  .task-detail-modal::part(content) {
+    --width: 100vw;
+    --height: 100dvh;
+    --border-radius: 0;
+  }
+}
+
+/* ---- Smooth light/dark transition (kelas dipasang sesaat saat toggle) ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .theme-transition,
+  .theme-transition *,
+  .theme-transition *::before,
+  .theme-transition *::after {
+    transition:
+      background-color 0.35s ease,
+      border-color 0.35s ease,
+      color 0.35s ease,
+      fill 0.35s ease,
+      box-shadow 0.35s ease !important;
+  }
+}
+
+/* ---- Util ---- */
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
