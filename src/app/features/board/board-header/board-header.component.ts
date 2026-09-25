@@ -21,11 +21,11 @@ import { AvatarStackComponent } from '@app/shared/components/avatar-stack/avatar
   template: `
     <div class="bar">
       <div class="left">
-        <span class="workspace">
+        <button class="workspace" (click)="openWorkspace.emit($event)" aria-label="Switch board">
           <ion-icon name="lock-closed-outline" class="lock"></ion-icon>
           <strong>Adhivasindo</strong>
           <ion-icon name="chevron-down-outline"></ion-icon>
-        </span>
+        </button>
         <app-avatar-stack [members]="store.members()" [max]="4" />
         <ion-button size="small" class="invite" (click)="invite.emit()">
           <ion-icon name="person-add-outline" slot="start"></ion-icon>
@@ -97,7 +97,17 @@ import { AvatarStackComponent } from '@app/shared/components/avatar-stack/avatar
         align-items: center;
         gap: 5px;
         font-size: 15px;
+        font-family: inherit;
         color: var(--board-ink);
+        background: transparent;
+        border: 0;
+        border-radius: 8px;
+        padding: 6px 8px;
+        margin-left: -8px;
+        cursor: pointer;
+      }
+      .workspace:hover {
+        background: var(--board-search-bg);
       }
       .workspace .lock {
         font-size: 14px;
@@ -153,6 +163,7 @@ export class BoardHeaderComponent {
 
   readonly searchChange = output<string>();
   readonly openFilter = output<Event>();
+  readonly openWorkspace = output<Event>();
   readonly exportImport = output<Event>();
   readonly toggleTheme = output<void>();
   readonly invite = output<void>();
