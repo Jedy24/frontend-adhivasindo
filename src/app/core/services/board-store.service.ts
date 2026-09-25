@@ -145,32 +145,23 @@ export class BoardStoreService {
     });
   });
 
-  readonly tasksByColumn = computed<Record<ColumnId, Task[]>>(() => {
-    const grouped: Record<ColumnId, Task[]> = {
-      todo: [],
-      doing: [],
-      review: [],
-      done: [],
-      rework: [],
-    };
+  readonly tasksByColumn = computed<Record<string, Task[]>>(() => {
+    const grouped: Record<string, Task[]> = {};
+    for (const col of this.columns()) grouped[col.id] = [];
     for (const task of this.filteredTasks()) {
-      grouped[task.columnId].push(task);
+      (grouped[task.columnId] ??= []).push(task);
     }
-    for (const key of Object.keys(grouped) as ColumnId[]) {
+    for (const key of Object.keys(grouped)) {
       grouped[key].sort((a, b) => a.order - b.order);
     }
     return grouped;
   });
 
-  readonly counts = computed<Record<ColumnId, number>>(() => {
+  readonly counts = computed<Record<string, number>>(() => {
     const byCol = this.tasksByColumn();
-    return {
-      todo: byCol.todo.length,
-      doing: byCol.doing.length,
-      review: byCol.review.length,
-      done: byCol.done.length,
-      rework: byCol.rework.length,
-    };
+    const out: Record<string, number> = {};
+    for (const key of Object.keys(byCol)) out[key] = byCol[key].length;
+    return out;
   });
 
   readonly isFiltering = computed<boolean>(() => {
@@ -360,6 +351,46 @@ export class BoardStoreService {
 
   clearFilter(): void {
     this.filter.set({ ...EMPTY_FILTER });
+  }
+
+  addColumn(title: string): BoardColumn {
+    const name = title.trim() || 'New List';
+    const order = this.columns().reduce((m, c) => Math.max(m, c.order), -1) + 1;
+    const column: BoardColumn = { id: newId('col'), title: name, order };
+    this.columns.update((list) => [...list, column]);
+    return column;
+  }
+
+  renameColumn(id: ColumnId, title: string): void {
+    const name = title.trim();
+    if (!name) return;
+    this.columns.update((list) => list.map((c) => (c.id === id ? { ...c, title: name } : c)));
+  }
+
+  /** Hapus column custom; task di dalamnya dipindah ke column pertama. */
+  deleteColumn(id: ColumnId): void {
+    const remaining = this.columns().filter((c) => c.id !== id);
+    if (remaining.length === 0) return;
+    const fallback = remaining.slice().sort((a, b) => a.order - b.order)[0];
+    const stamp = new Date().toISOString();
+    this.tasks.update((list) =>
+      list.map((t) => (t.columnId === id ? { ...t, columnId: fallback.id, updatedAt: stamp } : t)),
+    );
+    this.columns.set(remaining);
+    this.normalizeColumn(fallback.id);
+  }
+
+  sortColumn(id: ColumnId, by: 'due' | 'title'): void {
+    const ordered = this.tasks()
+      .filter((t) => t.columnId === id)
+      .sort((a, b) =>
+        by === 'title'
+          ? a.title.localeCompare(b.title)
+          : (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999'),
+      )
+      .map((t, i) => ({ ...t, order: i }));
+    const merged = new Map(ordered.map((t) => [t.id, t]));
+    this.tasks.update((list) => list.map((t) => merged.get(t.id) ?? t));
   }
 
   private updateChecklist(taskId: string, fn: (list: Task['checklist']) => Task['checklist']): void {

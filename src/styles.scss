@@ -43,15 +43,33 @@ body {
   padding: 12px 16px 24px;
   scroll-snap-type: x proximity;
   min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--board-muted) var(--board-line);
 }
 
 .board-scroll::-webkit-scrollbar {
   height: 8px;
 }
 
-.board-scroll::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+.board-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  background: color-mix(in srgb, var(--board-line) 35%, transparent);
   border-radius: 8px;
+}
+
+.board-scroll::-webkit-scrollbar-thumb {
+  background: var(--board-muted);
+  border-radius: 8px;
+}
+
+/* ---- Prompt modal kecil (ganti alert input) ---- */
+.prompt-modal::part(content) {
+  --width: min(380px, calc(100vw - 48px));
+  --height: auto;
+  --max-height: calc(100vh - 48px);
+  --border-radius: 16px;
+  --background: var(--ion-background-color);
+  overflow: hidden;
 }
 
 /* ---- Modal lebar (detail task, desktop 2 kolom) ---- */
@@ -82,6 +100,13 @@ body {
       fill 0.35s ease,
       box-shadow 0.35s ease !important;
   }
+}
+
+/* ---- Popover board (filter, workspace, menu column): kunci lebar agar tidak overflow ---- */
+.board-popover::part(content) {
+  width: min(300px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  overflow-x: hidden;
 }
 
 /* ---- Util ---- */

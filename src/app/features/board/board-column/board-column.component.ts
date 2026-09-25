@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
-import { IonButton, IonIcon } from '@ionic/angular';
+import { IonButton, IonIcon, PopoverController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline, ellipsisHorizontal } from 'ionicons/icons';
 import type { BoardColumn, ColumnId, Task } from '@app/core/models/board.model';
 import { TaskCardComponent } from '@app/features/board/task-card/task-card.component';
+import { ColumnMenuComponent } from '@app/features/board/column-menu/column-menu.component';
 import { EmptyStateComponent } from '@app/shared/components/empty-state/empty-state.component';
 
 @Component({
@@ -34,7 +35,12 @@ import { EmptyStateComponent } from '@app/shared/components/empty-state/empty-st
           >
             <ion-icon name="add-outline" slot="icon-only"></ion-icon>
           </ion-button>
-          <ion-button fill="clear" size="small" aria-label="Column options">
+          <ion-button
+            fill="clear"
+            size="small"
+            aria-label="Column options"
+            (click)="openMenu($event)"
+          >
             <ion-icon name="ellipsis-horizontal" slot="icon-only"></ion-icon>
           </ion-button>
         </span>
@@ -65,6 +71,7 @@ import { EmptyStateComponent } from '@app/shared/components/empty-state/empty-st
         display: flex;
         flex-direction: column;
         min-height: 0;
+        max-height: 100%;
       }
       .col-head {
         display: flex;
@@ -102,9 +109,23 @@ import { EmptyStateComponent } from '@app/shared/components/empty-state/empty-st
       .drop {
         display: flex;
         flex-direction: column;
-        min-height: 120px;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
         border-radius: var(--board-radius);
         padding: 2px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--board-line) transparent;
+      }
+      .drop::-webkit-scrollbar {
+        width: 6px;
+      }
+      .drop::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .drop::-webkit-scrollbar-thumb {
+        background: var(--board-line);
+        border-radius: 8px;
       }
       .drop.cdk-drop-list-dragging {
         background: rgba(37, 99, 235, 0.06);
@@ -113,6 +134,8 @@ import { EmptyStateComponent } from '@app/shared/components/empty-state/empty-st
   ],
 })
 export class BoardColumnComponent {
+  private readonly popoverCtrl = inject(PopoverController);
+
   readonly column = input.required<BoardColumn>();
   readonly tasks = input.required<Task[]>();
   readonly connectedTo = input<string[]>([]);
@@ -123,6 +146,17 @@ export class BoardColumnComponent {
 
   dropId(): string {
     return `list-${this.column().id}`;
+  }
+
+  async openMenu(event: Event): Promise<void> {
+    const popover = await this.popoverCtrl.create({
+      component: ColumnMenuComponent,
+      componentProps: { columnId: this.column().id },
+      event,
+      translucent: true,
+      cssClass: 'board-popover',
+    });
+    await popover.present();
   }
 
   constructor() {

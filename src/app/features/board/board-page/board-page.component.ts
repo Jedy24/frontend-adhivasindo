@@ -16,6 +16,11 @@ import { ToastService } from '@app/core/services/toast.service';
 import { BoardHeaderComponent } from '@app/features/board/board-header/board-header.component';
 import { BoardColumnComponent } from '@app/features/board/board-column/board-column.component';
 import { FilterPopoverComponent } from '@app/features/board/filter-popover/filter-popover.component';
+import { WorkspaceMenuComponent } from '@app/features/board/workspace-menu/workspace-menu.component';
+import {
+  PromptModalComponent,
+  type PromptResult,
+} from '@app/shared/components/prompt-modal/prompt-modal.component';
 import { TaskDetailModalComponent } from '@app/features/task-detail/task-detail-modal/task-detail-modal.component';
 import { EmptyStateComponent } from '@app/shared/components/empty-state/empty-state.component';
 
@@ -33,41 +38,44 @@ import { EmptyStateComponent } from '@app/shared/components/empty-state/empty-st
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content>
-      <app-board-header
-        [search]="store.filter().search"
-        [activeFilterCount]="activeFilterCount()"
-        [dark]="theme.dark()"
-        (searchChange)="onSearch($event)"
-        (openFilter)="openFilter($event)"
-        (exportImport)="openExportImport()"
-        (toggleTheme)="theme.toggle()"
-        (invite)="invite()"
-      />
-
-      @if (store.isFiltering() && totalVisible() === 0) {
-        <app-empty-state
-          title="No matching tasks"
-          subtitle="Try a different keyword or clear the filters."
-          actionLabel="Clear filters"
-          (action)="store.clearFilter()"
+      <div class="page">
+        <app-board-header
+          [search]="store.filter().search"
+          [activeFilterCount]="activeFilterCount()"
+          [dark]="theme.dark()"
+          (searchChange)="onSearch($event)"
+          (openFilter)="openFilter($event)"
+          (openWorkspace)="openWorkspace($event)"
+          (exportImport)="openExportImport()"
+          (toggleTheme)="theme.toggle()"
+          (invite)="invite()"
         />
-      }
 
-      <div class="board-scroll" cdkDropListGroup>
-        @for (col of store.columns(); track col.id) {
-          <app-board-column
-            [column]="col"
-            [tasks]="store.tasksByColumn()[col.id]"
-            [connectedTo]="connectedIds()"
-            (dropped)="onDrop($event)"
-            (add)="createTask($event)"
-            (open)="openDetail($event)"
+        @if (store.isFiltering() && totalVisible() === 0) {
+          <app-empty-state
+            title="No matching tasks"
+            subtitle="Try a different keyword or clear the filters."
+            actionLabel="Clear filters"
+            (action)="store.clearFilter()"
           />
         }
-        <button class="add-list" (click)="addListInfo()" aria-label="Add new list">
-          <ion-icon name="add-outline"></ion-icon>
-          Add new List
-        </button>
+
+        <div class="board-scroll" cdkDropListGroup #boardScroll>
+          @for (col of store.columns(); track col.id) {
+            <app-board-column
+              [column]="col"
+              [tasks]="store.tasksByColumn()[col.id]"
+              [connectedTo]="connectedIds()"
+              (dropped)="onDrop($event)"
+              (add)="createTask($event)"
+              (open)="openDetail($event)"
+            />
+          }
+          <button class="add-list" (click)="addListInfo()" aria-label="Add new list">
+            <ion-icon name="add-outline"></ion-icon>
+            Add new List
+          </button>
+        </div>
       </div>
 
       <input #importInput type="file" accept="application/json" hidden (change)="onImportFile($event)" />
@@ -75,8 +83,25 @@ import { EmptyStateComponent } from '@app/shared/components/empty-state/empty-st
   `,
   styles: [
     `
+      :host {
+        display: block;
+        height: 100%;
+      }
       ion-content {
         --background: var(--ion-background-color);
+        --overflow: hidden;
+      }
+      .page {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .page app-board-header {
+        flex: 0 0 auto;
+      }
+      .page .board-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
       }
       .add-list {
         flex: 0 0 220px;
@@ -111,6 +136,7 @@ export class BoardPageComponent implements OnInit {
   private readonly toast = inject(ToastService);
 
   private readonly importInput = viewChild.required<ElementRef<HTMLInputElement>>('importInput');
+  private readonly boardScroll = viewChild<ElementRef<HTMLDivElement>>('boardScroll');
   private searchTimer: ReturnType<typeof setTimeout> | undefined;
 
   protected readonly connectedIds = computed(() =>
@@ -145,7 +171,20 @@ export class BoardPageComponent implements OnInit {
     const popover = await this.popoverCtrl.create({
       component: FilterPopoverComponent,
       event,
+      side: 'bottom',
+      alignment: 'end',
       translucent: true,
+      cssClass: 'board-popover',
+    });
+    await popover.present();
+  }
+
+  async openWorkspace(event: Event): Promise<void> {
+    const popover = await this.popoverCtrl.create({
+      component: WorkspaceMenuComponent,
+      event,
+      translucent: true,
+      cssClass: 'board-popover',
     });
     await popover.present();
   }
@@ -226,7 +265,25 @@ export class BoardPageComponent implements OnInit {
     void this.toast.notify('Invite link copied (dummy)', 'primary');
   }
 
-  addListInfo(): void {
-    void this.toast.notify('Adding new lists is not available in this version', 'primary');
+  async addListInfo(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: PromptModalComponent,
+      componentProps: {
+        title: 'Add new list',
+        placeholder: 'List title',
+        value: '',
+        confirmLabel: 'Add',
+      },
+      cssClass: 'prompt-modal',
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<PromptResult>();
+    if (role !== 'confirm' || !data?.value.trim()) return;
+    const column = this.store.addColumn(data.value);
+    await this.toast.notify(`List "${column.title}" added`, 'primary');
+    requestAnimationFrame(() => {
+      const el = this.boardScroll()?.nativeElement;
+      el?.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+    });
   }
 }

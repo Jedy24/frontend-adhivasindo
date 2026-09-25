@@ -1,6 +1,7 @@
 export type TaskLabel = 'Feature' | 'Bug' | 'Issue' | 'Undefined';
 export type Priority = 'Low' | 'Medium' | 'High' | 'Urgent';
-export type ColumnId = 'todo' | 'doing' | 'review' | 'done' | 'rework';
+/** ID column: 5 bawaan ('todo'|'doing'|'review'|'done'|'rework') + custom 'col-xxx' dari Add new List. */
+export type ColumnId = string;
 
 export type DueFilter = 'all' | 'overdue' | 'today' | 'week' | 'nodate';
 
@@ -66,6 +67,11 @@ export interface ChecklistProgress {
 export const TASK_LABELS: TaskLabel[] = ['Feature', 'Bug', 'Issue', 'Undefined'];
 
 export const PRIORITIES: Priority[] = ['Low', 'Medium', 'High', 'Urgent'];
+
+/** ID bawaan — hanya column custom (di luar daftar ini) yang bisa rename/delete. */
+export const DEFAULT_COLUMN_IDS: readonly string[] = ['todo', 'doing', 'review', 'done', 'rework'];
+
+export const isCustomColumn = (id: string): boolean => !DEFAULT_COLUMN_IDS.includes(id);
 
 export const EMPTY_FILTER: BoardFilter = {
   search: '',
