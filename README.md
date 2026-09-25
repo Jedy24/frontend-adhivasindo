@@ -1,6 +1,6 @@
 # Frontend Adhivasindo — Task Management Board
 
-Aplikasi Kanban (To Do, Doing, Review, Done, Rework) untuk test frontend Adhivasindo.
+Aplikasi Kanban (To Do, Doing, Review, Done, Rework)
 Dibangun dengan **Ionic Angular (Angular 22 + Ionic 9)**, Drag & Drop memakai
 **Angular CDK**, state memakai **Service Store berbasis Signals** dengan persist
 **LocalStorage**.
